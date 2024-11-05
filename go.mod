@@ -21,10 +21,11 @@ require (
 	github.com/onsi/gomega v1.11.0 // indirect
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a // indirect
+	github.com/segmentio/kafka-go v0.4.47
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.8.0
 	github.com/zhenjl/cityhash v0.0.0-20131128155616-cdd6a94144ab
-	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
+	golang.org/x/net v0.17.0
 	google.golang.org/grpc v1.22.3
 	gopkg.in/Shopify/sarama.v1 v1.19.0
 )
