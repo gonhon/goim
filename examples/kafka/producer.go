@@ -11,15 +11,22 @@ import (
 )
 
 func Write(ctx context.Context) {
-	writer := &kafka.Writer{
-		// Addr:                   kafka.TCP("10.66.0.11:9092"),
-		Addr:                   kafka.TCP("localhost:9092"),
+	/* writer := &kafka.Writer{
+		Addr: kafka.TCP("10.66.0.11:9092"),
+		// Addr:                   kafka.TCP("localhost:9092"),
 		Topic:                  topic,
 		Balancer:               &kafka.Hash{},
 		WriteTimeout:           1 * time.Second,
 		RequiredAcks:           kafka.RequireNone,
 		AllowAutoTopicCreation: true,
 	}
+	defer writer.Close() */
+
+	// 创建 Kafka 生产者
+	writer := kafka.NewWriter(kafka.WriterConfig{
+		Brokers: []string{kafkaIP},
+		Topic:   topic, // 替换为你的目标主题
+	})
 	defer writer.Close()
 
 	tm := time.Now().Unix()
@@ -44,9 +51,6 @@ func Write(ctx context.Context) {
 	}
 }
 func Write1() {
-
-	// 替换为你的 Kafka IP 地址
-	kafkaIP := "127.0.0.1:9092" // 例如 "192.168.1.100:9092"
 
 	// 创建 Kafka 生产者
 	writer := kafka.NewWriter(kafka.WriterConfig{

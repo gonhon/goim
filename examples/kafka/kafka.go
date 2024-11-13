@@ -5,6 +5,7 @@ import (
 )
 
 var (
-	reader *kafka.Reader
-	topic  = "user_click"
+	reader  *kafka.Reader
+	topic   = "user_click"
+	kafkaIP = "10.66.0.11:9092"
 )

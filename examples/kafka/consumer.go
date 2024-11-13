@@ -13,7 +13,7 @@ import (
 
 func read(ctx context.Context) {
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{"localhost:9092"},
+		Brokers:        []string{kafkaIP},
 		Topic:          topic,
 		CommitInterval: 1 * time.Second,
 		GroupID:        "rec_team",

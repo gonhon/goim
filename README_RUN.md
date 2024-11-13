@@ -16,3 +16,12 @@ go run examples/javascript/main.go
 http://10.66.0.11:9080/ui/clusters/local/all-topics/goim-push-topic
 
 http://10.66.0.11:1999/examples/javascript/
+
+debug
+```json
+ "args": [
+                "-region","sh",
+                "-zone","sh001",
+                "-deploy.env","dev",
+            ]
+```
