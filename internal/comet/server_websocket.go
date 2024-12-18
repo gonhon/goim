@@ -419,9 +419,9 @@ func (s *Server) authWebsocket(ctx context.Context, ws *websocket.Conn, p *proto
 	if mid, key, rid, accepts, hb, err = s.Connect(ctx, p, cookie); err != nil {
 		return
 	}
-	p.Op = protocol.OpAuthReply
+	p.Op = protocol.OpAuthReply //Op设置为8 让客户端发起心跳
 	p.Body = nil
-	if err = p.WriteWebsocket(ws); err != nil {
+	if err = p.WriteWebsocket(ws); err != nil { //身份验证后向客户端写入数据
 		return
 	}
 	err = ws.Flush()

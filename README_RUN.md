@@ -75,3 +75,11 @@ all: build-macos build-linux build-windows
 
 ### 总结
 这些概念共同构成了 GoIM 的基础架构，使其能够高效、可靠地处理即时通讯的需求。每个组件都有其特定的功能，互相配合以实现完整的消息传递和用户管理功能。
+
+
+TEST
+
+http://10.66.0.11/im/mids1/
+http://10.66.0.11/im/mids2/
+http://10.66.0.11/im/mids123_room2/
+http://10.66.0.11:9080/ui/clusters/local/all-topics/goim-push-topic
