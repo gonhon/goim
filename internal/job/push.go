@@ -35,6 +35,7 @@ func (j *Job) pushKeys(operation int32, serverID string, subKeys []string, body 
 	}
 	p.WriteTo(buf)
 	p.Body = buf.Buffer()
+	//Op 9
 	p.Op = protocol.OpRaw
 	var args = comet.PushMsgReq{
 		Keys:    subKeys,
