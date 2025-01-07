@@ -83,3 +83,10 @@ http://10.66.0.11/im/mids1/
 http://10.66.0.11/im/mids2/
 http://10.66.0.11/im/mids123_room2/
 http://10.66.0.11:9080/ui/clusters/local/all-topics/goim-push-topic
+
+
+I1221 16:11:03.679344   11477 server_websocket.go:145] start tcp serve "10.66.0.11:3102" with "10.66.0.1:58969"
+E1221 16:11:06.907513   11477 server_websocket.go:226] key:  remoteIP: 10.66.0.1:58969 step: 4 ws handshake failed error(rpc error: code = Unavailable desc = all SubConns are in TransientFailure, latest connection error: connection closed)
+I1221 16:11:10.110675   11477 client.go:458] discovery: set client.Get(http://127.0.0.1:7171/discovery/set?appid=goim.comet&env=dev&hostname=dev-server&metadata=%7B%22addrs%22%3A%22127.0.0.1%22%2C%22conn_count%22%3A%220%22%2C%22ip_count%22%3A%220%22%2C%22offline%22%3A%22false%22%2C%22weight%22%3A%2210%22%7D&region=sh&status=1&version=&zone=sh001) env(dev) appid(goim.comet) addrs([grpc://172.19.134.80:3109]) success
+I1221 16:11:20.112775   11477 client.go:458] discovery: set client.Get(http://127.0.0.1:7171/discovery/set?appid=goim.comet&env=dev&hostname=dev-server&metadata=%7B%22addrs%22%3A%22127.0.0.1%22%2C%22conn_count%22%3A%220%22%2C%22ip_count%22%3A%220%22%2C%22offline%22%3A%22false%22%2C%22weight%22%3A%2210%22%7D&region=sh&status=1&version=&zone=sh001) env(dev) appid(goim.comet) addrs([grpc://172.19.134.80:3109]) success
+I1221 16:11:20.113586   11477 client.go:569] discovery: successfully polls(http://127.0.0.1:7171/discovery/polls?appid=infra.discovery&appid=goim.logic&env=dev&hostname=dev-server&latest_timestamp=1734768270630885245&latest_timestamp=1734768511101364041) instances ({"goim.comet":{"instances":{"sh001":[{"region":"sh","zone":"sh001","env":"dev","appid":"goim.comet","hostname":"dev-server","addrs":["grpc://172.19.134.80:3109"],"version":"","latest_timestamp":0,"metadata":{"addrs":"127.0.0.1","conn_count":"0","ip_count":"0","offline":"false","weight":"10"}}]},"latest_timestamp":1734768510061289243,"scheduler":null}})

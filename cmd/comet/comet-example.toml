@@ -4,11 +4,11 @@
 
 [rpcServer]
     addr = ":3109"
-    timeout = "1s"
+    timeout = "10s"
 
 [rpcClient]
-    dial = "1s"
-    timeout = "1s"
+    dial = "10s"
+    timeout = "10s"
 
 [tcp]
     bind = [":3101"]

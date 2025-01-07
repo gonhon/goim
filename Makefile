@@ -21,9 +21,9 @@ clean:
 	rm -rf target/
 
 run:
-	nohup target/logic -conf=target/logic.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10 > target/logic.log 2>&1 &
-	nohup target/comet -conf=target/comet.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10 -addrs=127.0.0.1 -debug=true > target/comet.log 2>&1 &
-	nohup target/job -conf=target/job.toml -region=sh -zone=sh001 -deploy.env=dev > target/job.log 2>&1 &
+	nohup target/logic -conf=target/logic.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10  -logtostderr=true -v=2 > target/logic.log 2>&1 &
+	nohup target/comet -conf=target/comet.toml -region=sh -zone=sh001 -deploy.env=dev -weight=10 -addrs=127.0.0.1 -debug=true  -logtostderr=true -v=2 > target/comet.log 2>&1 &
+	nohup target/job -conf=target/job.toml -region=sh -zone=sh001 -deploy.env=dev  -logtostderr=true -v=2 > target/job.log 2>&1 &
 
 stop:
 	pkill -f target/logic
