@@ -90,3 +90,43 @@ E1221 16:11:06.907513   11477 server_websocket.go:226] key:  remoteIP: 10.66.0.1
 I1221 16:11:10.110675   11477 client.go:458] discovery: set client.Get(http://127.0.0.1:7171/discovery/set?appid=goim.comet&env=dev&hostname=dev-server&metadata=%7B%22addrs%22%3A%22127.0.0.1%22%2C%22conn_count%22%3A%220%22%2C%22ip_count%22%3A%220%22%2C%22offline%22%3A%22false%22%2C%22weight%22%3A%2210%22%7D&region=sh&status=1&version=&zone=sh001) env(dev) appid(goim.comet) addrs([grpc://172.19.134.80:3109]) success
 I1221 16:11:20.112775   11477 client.go:458] discovery: set client.Get(http://127.0.0.1:7171/discovery/set?appid=goim.comet&env=dev&hostname=dev-server&metadata=%7B%22addrs%22%3A%22127.0.0.1%22%2C%22conn_count%22%3A%220%22%2C%22ip_count%22%3A%220%22%2C%22offline%22%3A%22false%22%2C%22weight%22%3A%2210%22%7D&region=sh&status=1&version=&zone=sh001) env(dev) appid(goim.comet) addrs([grpc://172.19.134.80:3109]) success
 I1221 16:11:20.113586   11477 client.go:569] discovery: successfully polls(http://127.0.0.1:7171/discovery/polls?appid=infra.discovery&appid=goim.logic&env=dev&hostname=dev-server&latest_timestamp=1734768270630885245&latest_timestamp=1734768511101364041) instances ({"goim.comet":{"instances":{"sh001":[{"region":"sh","zone":"sh001","env":"dev","appid":"goim.comet","hostname":"dev-server","addrs":["grpc://172.19.134.80:3109"],"version":"","latest_timestamp":0,"metadata":{"addrs":"127.0.0.1","conn_count":"0","ip_count":"0","offline":"false","weight":"10"}}]},"latest_timestamp":1734768510061289243,"scheduler":null}})
+
+
+google.golang.org/grpc
+github.com/bilibili/discovery/naming
+github.com/bsm/sarama-cluster
+
+
+go env -w GOPROXY=https://goproxy.cn,https://proxy.golang.org,direct
+
+go env -w GOPROXY=https://goproxy.cn,direct
+go env -w GOPROXY=https://proxy.golang.org,direct
+
+go clean -modcache && go mod tidy
+
+go get go.etcd.io/etcd/client/v3
+
+
+root@dev-server:/resources/codes/go/goim# make build 
+rm -rf target/
+mkdir target/
+cp cmd/comet/comet-example.toml target/comet.toml
+cp cmd/logic/logic-example.toml target/logic.toml
+cp cmd/job/job-example.toml target/job.toml
+GO111MODULE=on go build -gcflags="all=-N -l" -o target/comet cmd/comet/main.go
+# github.com/bilibili/discovery/naming/grpc
+/usr/local/go/pkg/mod/github.com/bilibili/discovery@v1.0.1/naming/grpc/resolver.go:44:87: undefined: resolver.BuildOption
+/usr/local/go/pkg/mod/github.com/bilibili/discovery@v1.0.1/naming/grpc/resolver.go:46:24: cannot use target.Endpoint (value of type func() string) as string value in argument to strings.SplitN
+/usr/local/go/pkg/mod/github.com/bilibili/discovery@v1.0.1/naming/grpc/resolver.go:95:42: undefined: resolver.ResolveNowOption
+/usr/local/go/pkg/mod/github.com/bilibili/discovery@v1.0.1/naming/grpc/resolver.go:150:4: unknown field Type in struct literal of type "google.golang.org/grpc/resolver".Address
+/usr/local/go/pkg/mod/github.com/bilibili/discovery@v1.0.1/naming/grpc/resolver.go:150:25: undefined: resolver.Backend
+# github.com/Terry-Mao/goim/internal/comet
+internal/comet/server.go:46:9: undefined: grpc.WithBalancerName
+make: *** [Makefile:13: build] Error 1
+
+
+
+
+protoc --go_out=. --go-grpc_out=. comet.proto
+protoc --proto_path=/resources/codes/go/goim/api/comet --proto_path=/resources/codes/go/goim/api/protocol --go_out=. --go-grpc_out=. /resources/codes/go/goim/api/comet/comet_new.proto
+protoc --proto_path=../../ --go_out=. --go-grpc_out=. comet_new.proto
