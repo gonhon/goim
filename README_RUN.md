@@ -130,3 +130,10 @@ make: *** [Makefile:13: build] Error 1
 protoc --go_out=. --go-grpc_out=. comet.proto
 protoc --proto_path=/resources/codes/go/goim/api/comet --proto_path=/resources/codes/go/goim/api/protocol --go_out=. --go-grpc_out=. /resources/codes/go/goim/api/comet/comet_new.proto
 protoc --proto_path=../../ --go_out=. --go-grpc_out=. comet_new.proto
+
+
+import "github.com/Terry-Mao/goim/api/protocol/protocol.proto";
+---> import "goim/api/protocol/protocol.proto";
+
+goim上一个目录执行
+protoc -I=. --go_out=. --go-grpc_out=. goim/api/comet/comet.proto 
