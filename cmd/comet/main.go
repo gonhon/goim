@@ -14,13 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bilibili/discovery/naming"
-	resolver "github.com/bilibili/discovery/naming/grpc"
 	"github.com/Terry-Mao/goim/internal/comet"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/Terry-Mao/goim/internal/comet/grpc"
 	md "github.com/Terry-Mao/goim/internal/logic/model"
 	"github.com/Terry-Mao/goim/pkg/ip"
+	"github.com/bilibili/discovery/naming"
 	log "github.com/golang/glog"
 )
 
@@ -36,11 +35,11 @@ func main() {
 	}
 	rand.Seed(time.Now().UTC().UnixNano())
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	println(conf.Conf.Debug)
+	log.Info(conf.Conf.Debug)
 	log.Infof("goim-comet [version: %s env: %+v] start", ver, conf.Conf.Env)
 	// register discovery
-	dis := naming.New(conf.Conf.Discovery)
-	resolver.Register(dis)
+	/* dis := naming.New(conf.Conf.Discovery)
+	resolver.Register(dis) */
 	// new comet server
 	srv := comet.NewServer(conf.Conf)
 	if err := comet.InitWhitelist(conf.Conf.Whitelist); err != nil {
@@ -59,7 +58,9 @@ func main() {
 	}
 	// new grpc server
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
-	cancel := register(dis, srv)
+	// cancel := register(dis, srv)
+	// todo 更新元数据
+
 	// signal
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
@@ -68,9 +69,9 @@ func main() {
 		log.Infof("goim-comet get a signal %s", s.String())
 		switch s {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			if cancel != nil {
-				cancel()
-			}
+			// if cancel != nil {
+			// 	cancel()
+			// }
 			rpcSrv.GracefulStop()
 			srv.Close()
 			log.Infof("goim-comet [version: %s] exit", ver)

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bilibili/discovery/naming"
 	"github.com/BurntSushi/toml"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
+	"github.com/bilibili/discovery/naming"
 )
 
 var (
@@ -18,6 +18,8 @@ var (
 	zone      string
 	deployEnv string
 	host      string
+	hostEtcd  string
+	portEtcd  int
 	addrs     string
 	weight    int64
 	offline   bool
@@ -44,6 +46,8 @@ func init() {
 	flag.Int64Var(&weight, "weight", defWeight, "load balancing weight, or use WEIGHT env variable, value: 10 etc.")
 	flag.BoolVar(&offline, "offline", defOffline, "server offline. or use OFFLINE env variable, value: true/false etc.")
 	flag.BoolVar(&debug, "debug", defDebug, "server debug. or use DEBUG env variable, value: true/false etc.")
+	flag.StringVar(&hostEtcd, "etcd.host", "localhost", "etcd host.")
+	flag.IntVar(&portEtcd, "etcd.port", 2379, "etcd port.")
 }
 
 // Init init config.
@@ -56,9 +60,10 @@ func Init() (err error) {
 // Default new a config with specified defualt value.
 func Default() *Config {
 	return &Config{
-		Debug:     debug,
-		Env:       &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight, Addrs: strings.Split(addrs, ","), Offline: offline},
-		Discovery: &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
+		Debug:         debug,
+		Env:           &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight, Addrs: strings.Split(addrs, ","), Offline: offline},
+		Discovery:     &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
+		DiscoveryEtcd: &DiscoveryEtcd{Host: hostEtcd, Port: portEtcd},
 		RPCClient: &RPCClient{
 			Dial:    xtime.Duration(time.Second),
 			Timeout: xtime.Duration(time.Second),
@@ -107,16 +112,17 @@ func Default() *Config {
 
 // Config is comet config.
 type Config struct {
-	Debug     bool
-	Env       *Env
-	Discovery *naming.Config
-	TCP       *TCP
-	Websocket *Websocket
-	Protocol  *Protocol
-	Bucket    *Bucket
-	RPCClient *RPCClient
-	RPCServer *RPCServer
-	Whitelist *Whitelist
+	Debug         bool
+	Env           *Env
+	Discovery     *naming.Config
+	DiscoveryEtcd *DiscoveryEtcd
+	TCP           *TCP
+	Websocket     *Websocket
+	Protocol      *Protocol
+	Bucket        *Bucket
+	RPCClient     *RPCClient
+	RPCServer     *RPCServer
+	Whitelist     *Whitelist
 }
 
 // Env is env config.
@@ -193,4 +199,9 @@ type Bucket struct {
 type Whitelist struct {
 	Whitelist []int64
 	WhiteLog  string
+}
+
+type DiscoveryEtcd struct {
+	Host string
+	Port int
 }

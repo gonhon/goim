@@ -6,6 +6,7 @@ import (
 	"time"
 
 	pb "github.com/Terry-Mao/goim/api/logic"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	"github.com/Terry-Mao/goim/internal/logic"
 	"github.com/Terry-Mao/goim/internal/logic/conf"
 
@@ -27,6 +28,23 @@ func New(c *conf.RPCServer, l *logic.Logic) *grpc.Server {
 	})
 	srv := grpc.NewServer(keepParams)
 	pb.RegisterLogicServer(srv, &server{l})
+
+	//注册etcd--开始
+	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalDefName)
+	if err != nil {
+		panic(err)
+	}
+	err = service.AddEndpoint(etcdgrpc.Endpoint{
+		Addr:    "localhost",
+		Name:    etcdgrpc.LogicServerName,
+		Port:    2379,
+		Version: "1.0.0",
+	})
+	if err != nil {
+		panic(err)
+	}
+	//注册etcd--结束
+
 	lis, err := net.Listen(c.Network, c.Addr)
 	if err != nil {
 		panic(err)

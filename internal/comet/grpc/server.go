@@ -9,6 +9,7 @@ import (
 	"github.com/Terry-Mao/goim/internal/comet"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/Terry-Mao/goim/internal/comet/errors"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -25,6 +26,23 @@ func New(c *conf.RPCServer, s *comet.Server) *grpc.Server {
 	})
 	srv := grpc.NewServer(keepParams)
 	pb.RegisterCometServer(srv, &server{s})
+
+	//注册etcd--开始
+	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalDefName)
+	if err != nil {
+		panic(err)
+	}
+	err = service.AddEndpoint(etcdgrpc.Endpoint{
+		Addr:    "localhost",
+		Name:    etcdgrpc.CometServerName,
+		Port:    2379,
+		Version: "1.0.0",
+	})
+	if err != nil {
+		panic(err)
+	}
+	//注册etcd--结束
+
 	lis, err := net.Listen(c.Network, c.Addr)
 	if err != nil {
 		panic(err)

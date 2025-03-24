@@ -32,7 +32,8 @@
         var heartbeatInterval;
         function connect() {
             // var ws = new WebSocket('ws://sh.tony.wiki:3102/sub');
-            var ws = new WebSocket('ws://10.66.0.11:3102/sub');
+            // var ws = new WebSocket('ws://10.66.0.11:3102/sub');
+            var ws = new WebSocket('ws://localhost:3102/sub');
             ws.binaryType = 'arraybuffer';
             ws.onopen = function() {
                 auth();

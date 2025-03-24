@@ -7,6 +7,7 @@ import (
 
 	"github.com/Terry-Mao/goim/api/logic"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	log "github.com/golang/glog"
 	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
@@ -29,7 +30,17 @@ const (
 func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Dial))
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, "discovery://default/goim.logic",
+
+	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalDefName)
+	if err != nil {
+		log.Fatalf("Create naming service error: %v", err)
+	}
+	resolver, err := service.NewEtcdResolver()
+	if err != nil {
+		log.Fatalf("Create etcd resolver error: %v", err)
+	}
+	// conn, err := grpc.DialContext(ctx, "discovery://default/goim.logic",
+	conn, err := grpc.DialContext(ctx, "etcd://localhost:2379/goim/rpc/goim.logic",
 		[]grpc.DialOption{
 			grpc.WithInsecure(),
 			grpc.WithInitialWindowSize(grpcInitialWindowSize),
@@ -42,6 +53,7 @@ func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 				Timeout:             grpcKeepAliveTimeout,
 				PermitWithoutStream: true,
 			}),
+			grpc.WithResolvers(resolver),
 			// grpc.WithBalancerName(roundrobin.Name),
 			grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		}...)
