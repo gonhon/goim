@@ -2,19 +2,26 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"net"
+	"strconv"
+	"strings"
 	"time"
+
+	log "github.com/golang/glog"
 
 	pb "github.com/Terry-Mao/goim/api/logic"
 	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	"github.com/Terry-Mao/goim/internal/logic"
 	"github.com/Terry-Mao/goim/internal/logic/conf"
+	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 
 	// use gzip decoder
 	_ "google.golang.org/grpc/encoding/gzip"
+	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/reflection"
 )
 
 // New logic grpc server
@@ -27,17 +34,22 @@ func New(c *conf.RPCServer, l *logic.Logic) *grpc.Server {
 		MaxConnectionAge:      time.Duration(c.MaxLifeTime),
 	})
 	srv := grpc.NewServer(keepParams)
+	// srv := grpc.NewServer()
 	pb.RegisterLogicServer(srv, &server{l})
+	// 在服务注册后添加反射
+	reflection.Register(srv)
 
 	//注册etcd--开始
 	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalDefName)
 	if err != nil {
 		panic(err)
 	}
+	grpcPort, _ := strconv.Atoi(strings.TrimPrefix(c.Addr, ":"))
+	log.Infof("%s gprc port %d", etcdgrpc.LogicServerName, grpcPort)
 	err = service.AddEndpoint(etcdgrpc.Endpoint{
 		Addr:    "localhost",
 		Name:    etcdgrpc.LogicServerName,
-		Port:    2379,
+		Port:    grpcPort,
 		Version: "1.0.0",
 	})
 	if err != nil {
@@ -55,6 +67,59 @@ func New(c *conf.RPCServer, l *logic.Logic) *grpc.Server {
 		}
 	}()
 	return srv
+}
+
+func registerService(client *clientv3.Client, serviceName, serviceAddr string) {
+	lease, err := client.Grant(context.Background(), 60) // 租约10秒
+	if err != nil {
+		log.Fatalf("Failed to grant lease: %v", err)
+	}
+
+	instanceID := fmt.Sprintf("%s/%s", serviceName, serviceAddr) // 使用唯一的 key
+	log.Infof("instanceID:%s\n", instanceID)
+	_, err = client.Put(context.Background(), instanceID, serviceAddr, clientv3.WithLease(lease.ID))
+	if err != nil {
+		log.Fatalf("Failed to register service: %v", err)
+	}
+
+	// 定期续租
+	/* go func() {
+		for {
+			_, err = client.KeepAlive(context.Background(), lease.ID)
+			if err != nil {
+				log.Fatalf("Failed to keep alive: %v", err)
+			}
+			time.Sleep(5 * time.Second)
+		}
+	}() */
+	// 开始续租
+	keepAliveCh, err := client.KeepAlive(context.Background(), lease.ID)
+	if err != nil {
+		log.Fatalf("Failed to start keep alive: %v", err)
+	}
+
+	go func() {
+		for {
+			select {
+			case ka, ok := <-keepAliveCh:
+				if !ok {
+					log.Infof("Failed to keep alive: %v", err)
+					return
+				}
+				log.Infof("Keep alive response: %v", ka)
+			}
+		}
+	}()
+	/* go func() {
+		for {
+			_, err := client.KeepAliveOnce(context.Background(), lease.ID)
+			if err != nil {
+				log.Infof("Failed to keep alive: %v", err)
+				return
+			}
+			time.Sleep(5 * time.Second) // 设置心跳间隔
+		}
+	}() */
 }
 
 type server struct {

@@ -52,6 +52,7 @@ type NamingService struct {
 // 创建一个新的命名服务
 func NewNamingService(protocol, etcdHost string, etcdPort int, serviceName string) (*NamingService, error) {
 	url := fmt.Sprintf("%s://%s:%d", protocol, etcdHost, etcdPort)
+	log.Info("etcd url:", url)
 	client, err := clientv3.NewFromURL(url)
 	if err != nil {
 		return nil, err
@@ -115,7 +116,7 @@ func (naming *NamingService) AddEndpoint(e Endpoint) error {
 	go func() {
 		for {
 			ka := <-ch
-			log.Infof("ttl:", ka.ID, ka.TTL)
+			log.Info("ttl:", ka.ID, ka.TTL)
 		}
 	}()
 	serviceMap[e.Name] = &EndpointUnit{Name: e.Name, LeaseID: lease.ID, E: e}

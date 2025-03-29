@@ -322,7 +322,7 @@ func (s *Server) dispatchWebsocket(ws *websocket.Conn, wp *bytes.Pool, wb *bytes
 			whitelist.Printf("key: %s proto ready\n", ch.Key)
 		}
 		if conf.Conf.Debug {
-			log.Infof("key:%s dispatch msg:%s", ch.Key, p.Body)
+			log.Infof("key:%s dispatch msg:%s,p:%v", ch.Key, p.Body, p)
 		}
 		switch p {
 		case protocol.ProtoFinish:

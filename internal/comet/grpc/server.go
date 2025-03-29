@@ -3,7 +3,11 @@ package grpc
 import (
 	"context"
 	"net"
+	"strconv"
+	"strings"
 	"time"
+
+	log "github.com/golang/glog"
 
 	pb "github.com/Terry-Mao/goim/api/comet"
 	"github.com/Terry-Mao/goim/internal/comet"
@@ -32,10 +36,12 @@ func New(c *conf.RPCServer, s *comet.Server) *grpc.Server {
 	if err != nil {
 		panic(err)
 	}
+	grpcPort, _ := strconv.Atoi(strings.TrimPrefix(c.Addr, ":"))
+	log.Infof("%s gprc port %d", etcdgrpc.CometServerName, grpcPort)
 	err = service.AddEndpoint(etcdgrpc.Endpoint{
 		Addr:    "localhost",
 		Name:    etcdgrpc.CometServerName,
-		Port:    2379,
+		Port:    grpcPort,
 		Version: "1.0.0",
 	})
 	if err != nil {

@@ -60,7 +60,7 @@ func Init() (err error) {
 // Default new a config with specified defualt value.
 func Default() *Config {
 	return &Config{
-		Debug:         debug,
+		Debug:         true,
 		Env:           &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight, Addrs: strings.Split(addrs, ","), Offline: offline},
 		Discovery:     &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
 		DiscoveryEtcd: &DiscoveryEtcd{Host: hostEtcd, Port: portEtcd},
@@ -98,7 +98,7 @@ func Default() *Config {
 			TimerSize:        2048,
 			CliProto:         5,
 			SvrProto:         10,
-			HandshakeTimeout: xtime.Duration(time.Second * 5),
+			HandshakeTimeout: xtime.Duration(time.Second * 60),
 		},
 		Bucket: &Bucket{
 			Size:          32,

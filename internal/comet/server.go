@@ -12,6 +12,8 @@ import (
 	"github.com/zhenjl/cityhash"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 const (
@@ -31,16 +33,21 @@ func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Dial))
 	defer cancel()
 
+	//注册etcd--开始
 	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalDefName)
 	if err != nil {
 		log.Fatalf("Create naming service error: %v", err)
 	}
+
 	resolver, err := service.NewEtcdResolver()
 	if err != nil {
 		log.Fatalf("Create etcd resolver error: %v", err)
 	}
-	// conn, err := grpc.DialContext(ctx, "discovery://default/goim.logic",
-	conn, err := grpc.DialContext(ctx, "etcd://localhost:2379/goim/rpc/goim.logic",
+
+	target := "etcd://localhost:2379/" + service.GetPathServerName(etcdgrpc.LogicServerName)
+	log.Infof("grpc.DialContext target:%s", target)
+
+	conn, err := grpc.DialContext(ctx, target,
 		[]grpc.DialOption{
 			grpc.WithInsecure(),
 			grpc.WithInitialWindowSize(grpcInitialWindowSize),
@@ -53,14 +60,58 @@ func newLogicClient(c *conf.RPCClient) logic.LogicClient {
 				Timeout:             grpcKeepAliveTimeout,
 				PermitWithoutStream: true,
 			}),
+			//负载均衡
 			grpc.WithResolvers(resolver),
-			// grpc.WithBalancerName(roundrobin.Name),
 			grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 		}...)
+
 	if err != nil {
 		panic(err)
 	}
+	/* etcdClient, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{"localhost:2379"},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		log.Fatalf("Failed to connect to etcd: %v", err)
+	}
+	// defer etcdClient.Close()
+
+	// 获取服务地址
+	addresses, err := getServiceAddresses(etcdClient, "goim/logic")
+	if err != nil {
+		log.Fatalf("Failed to get service addresses: %v", err)
+	}
+	if len(addresses) == 0 {
+		log.Fatalf("No service found")
+	}
+
+	// 随机选择一个服务地址进行请求
+	// rand.Seed(time.Now().UnixNano())
+	serviceAddress := addresses[rand.New(rand.NewSource(time.Now().UnixNano())).Intn(len(addresses))]
+	log.Infof("grpc serviceAddress:%s\n", serviceAddress)
+
+	// 连接到 gRPC 服务
+	conn, err := grpc.Dial(serviceAddress, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Did not connect: %v", err)
+	} */
+	// defer conn.Close()
+	//注册etcd--结束
 	return logic.NewLogicClient(conn)
+}
+
+func getServiceAddresses(etcdClient *clientv3.Client, serviceName string) ([]string, error) {
+	resp, err := etcdClient.Get(context.Background(), serviceName, clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+
+	var addresses []string
+	for _, kv := range resp.Kvs {
+		addresses = append(addresses, string(kv.Value))
+	}
+	return addresses, nil
 }
 
 // Server is comet server.

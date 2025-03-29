@@ -34,7 +34,7 @@
     timerSize = 2048
     svrProto = 10
     cliProto = 5
-    handshakeTimeout = "8s"
+    handshakeTimeout = "60s"
 
 [whitelist]
     Whitelist = [123]
