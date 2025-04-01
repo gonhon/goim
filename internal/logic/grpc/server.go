@@ -38,15 +38,10 @@ func New(c *conf.RPCServer, l *logic.Logic) *grpc.Server {
 	pb.RegisterLogicServer(srv, &server{l})
 	// 在服务注册后添加反射
 	reflection.Register(srv)
-
 	//注册etcd--开始
-	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalDefName)
-	if err != nil {
-		panic(err)
-	}
 	grpcPort, _ := strconv.Atoi(strings.TrimPrefix(c.Addr, ":"))
 	log.Infof("%s gprc port %d", etcdgrpc.LogicServerName, grpcPort)
-	err = service.AddEndpoint(etcdgrpc.Endpoint{
+	err := l.NamingService.AddEndpoint(etcdgrpc.Endpoint{
 		Addr:    "localhost",
 		Name:    etcdgrpc.LogicServerName,
 		Port:    grpcPort,

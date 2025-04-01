@@ -5,13 +5,13 @@ import (
 	"time"
 
 	pb "github.com/Terry-Mao/goim/api/logic"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	"github.com/Terry-Mao/goim/internal/logic/model"
-	"github.com/bilibili/discovery/naming"
 	log "github.com/golang/glog"
 )
 
 // NodesInstances get servers info.
-func (l *Logic) NodesInstances(c context.Context) (res []*naming.Instance) {
+func (l *Logic) NodesInstances(c context.Context) (res []*etcdgrpc.Instance) {
 	return l.nodes
 }
 

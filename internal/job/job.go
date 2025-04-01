@@ -2,14 +2,15 @@ package job
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 
 	pb "github.com/Terry-Mao/goim/api/logic"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	"github.com/Terry-Mao/goim/internal/job/conf"
-	"github.com/bilibili/discovery/naming"
 	"github.com/golang/protobuf/proto"
+	clientv3 "go.etcd.io/etcd/client/v3"
 
 	cluster "github.com/bsm/sarama-cluster"
 	log "github.com/golang/glog"
@@ -32,7 +33,8 @@ func New(c *conf.Config) *Job {
 		consumer: newKafkaSub(c.Kafka),
 		rooms:    make(map[string]*Room),
 	}
-	j.watchComet(c.Discovery)
+	// j.watchComet(c.Discovery)
+	j.watchCometEtcd()
 	return j
 }
 
@@ -81,50 +83,44 @@ func (j *Job) Consume() {
 		}
 	}
 }
+func (j *Job) watchCometEtcd() {
+	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalRpcName)
+	if err != nil {
+		panic(err)
+	}
 
-func (j *Job) watchComet(c *naming.Config) {
-	dis := naming.New(c)
-	resolver := dis.Build("goim.comet")
-	event := resolver.Watch()
-	select {
-	case _, ok := <-event:
-		if !ok {
-			panic("watchComet init failed")
+	watchKey := fmt.Sprintf("%s/%s/%s", etcdgrpc.NameServicePrefix, etcdgrpc.LocalDataName, etcdgrpc.CometServerName)
+	log.Infof("watch key:%s", watchKey)
+
+	resp, err := service.Client.Get(context.Background(), watchKey, clientv3.WithPrefix())
+	if err == nil && len(resp.Kvs) > 0 {
+		for _, v := range resp.Kvs {
+			ins := &etcdgrpc.Instance{}
+			json.Unmarshal(v.Value, ins)
+			j.newAddressEtcd([]*etcdgrpc.Instance{ins})
 		}
-		if ins, ok := resolver.Fetch(); ok {
-			if err := j.newAddress(ins.Instances); err != nil {
-				panic(err)
-			}
-			log.Infof("watchComet init newAddress:%+v", ins)
-		}
-	case <-time.After(10 * time.Second):
-		log.Error("watchComet init instances timeout")
 	}
 	go func() {
-		for {
-			if _, ok := <-event; !ok {
-				log.Info("watchComet exit")
-				return
-			}
-			ins, ok := resolver.Fetch()
-			if ok {
-				if err := j.newAddress(ins.Instances); err != nil {
-					log.Errorf("watchComet newAddress(%+v) error(%+v)", ins, err)
-					continue
+		watchChan := service.Client.Watch(context.Background(), watchKey, clientv3.WithPrefix())
+		for watch := range watchChan {
+			for _, event := range watch.Events {
+				switch event.Type {
+				case clientv3.EventTypePut:
+					log.Infof("Key updated: %s, Value: %s\n", event.Kv.Key, event.Kv.Value)
+					ins := &etcdgrpc.Instance{}
+					json.Unmarshal(event.Kv.Value, ins)
+					j.newAddressEtcd([]*etcdgrpc.Instance{ins})
+				case clientv3.EventTypeDelete:
+					log.Infof("Key deleted: %s\n", event.Kv.Key)
 				}
-				log.Infof("watchComet change newAddress:%+v", ins)
 			}
 		}
 	}()
 }
 
-func (j *Job) newAddress(insMap map[string][]*naming.Instance) error {
-	ins := insMap[j.c.Env.Zone]
-	if len(ins) == 0 {
-		return fmt.Errorf("watchComet instance is empty")
-	}
+func (j *Job) newAddressEtcd(insArr []*etcdgrpc.Instance) error {
 	comets := map[string]*Comet{}
-	for _, in := range ins {
+	for _, in := range insArr {
 		if old, ok := j.cometServers[in.Hostname]; ok {
 			comets[in.Hostname] = old
 			continue

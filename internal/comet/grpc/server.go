@@ -32,13 +32,9 @@ func New(c *conf.RPCServer, s *comet.Server) *grpc.Server {
 	pb.RegisterCometServer(srv, &server{s})
 
 	//注册etcd--开始
-	service, err := etcdgrpc.NewLocalDefNamingService(etcdgrpc.LocalDefName)
-	if err != nil {
-		panic(err)
-	}
 	grpcPort, _ := strconv.Atoi(strings.TrimPrefix(c.Addr, ":"))
 	log.Infof("%s gprc port %d", etcdgrpc.CometServerName, grpcPort)
-	err = service.AddEndpoint(etcdgrpc.Endpoint{
+	err := s.NamingService.AddEndpoint(etcdgrpc.Endpoint{
 		Addr:    "localhost",
 		Name:    etcdgrpc.CometServerName,
 		Port:    grpcPort,

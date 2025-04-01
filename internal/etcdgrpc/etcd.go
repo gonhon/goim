@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	nameServicePrefix = "goim"
-	LocalDefName      = "rpc"
+	NameServicePrefix = "goim"
+	LocalRpcName      = "rpc"
+	LocalDataName     = "data"
 	LogicServerName   = "logic"
 	CometServerName   = "comet"
 	// 默认的租赁时间
@@ -49,6 +50,30 @@ type NamingService struct {
 	manager endpoints.Manager
 }
 
+// Instance represents a server the client connects to.
+type Instance struct {
+	// Region is region.
+	Region string `json:"region"`
+	// Zone is IDC.
+	Zone string `json:"zone"`
+	// Env prod/pre、uat/fat1
+	Env string `json:"env"`
+	// AppID is mapping servicetree appid.
+	AppID string `json:"appid"`
+	// Hostname is hostname from docker.
+	Hostname string `json:"hostname"`
+	// Addrs is the address of app instance
+	// format: scheme://host
+	Addrs []string `json:"addrs"`
+	// Version is publishing version.
+	Version string `json:"version"`
+	// LastTs is instance latest updated timestamp
+	LastTs int64 `json:"latest_timestamp"`
+	// Metadata is the information associated with Addr, which may be used
+	// to make load balancing decision.
+	Metadata map[string]string `json:"metadata"`
+}
+
 // 创建一个新的命名服务
 func NewNamingService(protocol, etcdHost string, etcdPort int, serviceName string) (*NamingService, error) {
 	url := fmt.Sprintf("%s://%s:%d", protocol, etcdHost, etcdPort)
@@ -57,7 +82,7 @@ func NewNamingService(protocol, etcdHost string, etcdPort int, serviceName strin
 	if err != nil {
 		return nil, err
 	}
-	target := fmt.Sprintf("%s/%s", nameServicePrefix, serviceName)
+	target := fmt.Sprintf("%s/%s", NameServicePrefix, serviceName)
 	log.Infof("target:%s\n", target)
 	// etcd的endpoints管理
 	manager, err := endpoints.NewManager(client, target)

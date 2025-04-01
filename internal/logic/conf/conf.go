@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bilibili/discovery/naming"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
 
 	"github.com/BurntSushi/toml"
@@ -47,8 +46,8 @@ func Init() (err error) {
 // Default new a config with specified defualt value.
 func Default() *Config {
 	return &Config{
-		Env:       &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight},
-		Discovery: &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
+		Env: &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight},
+		// Discovery: &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
 		HTTPServer: &HTTPServer{
 			Network:      "tcp",
 			Addr:         "3111",
@@ -72,8 +71,8 @@ func Default() *Config {
 
 // Config config.
 type Config struct {
-	Env        *Env
-	Discovery  *naming.Config
+	Env *Env
+	// Discovery  *naming.Config
 	RPCClient  *RPCClient
 	RPCServer  *RPCServer
 	HTTPServer *HTTPServer

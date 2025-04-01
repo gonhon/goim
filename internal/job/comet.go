@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/Terry-Mao/goim/api/comet"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	"github.com/Terry-Mao/goim/internal/job/conf"
-	"github.com/bilibili/discovery/naming"
 
 	log "github.com/golang/glog"
 	"google.golang.org/grpc"
@@ -71,7 +71,7 @@ type Comet struct {
 }
 
 // NewComet new a comet.
-func NewComet(in *naming.Instance, c *conf.Comet) (*Comet, error) {
+func NewComet(in *etcdgrpc.Instance, c *conf.Comet) (*Comet, error) {
 	cmt := &Comet{
 		serverID:      in.Hostname,
 		pushChan:      make([]chan *comet.PushMsgReq, c.RoutineSize),

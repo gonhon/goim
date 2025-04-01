@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/bilibili/discovery/naming"
 	"github.com/BurntSushi/toml"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
 )
@@ -41,9 +40,9 @@ func Init() (err error) {
 // Default new a config with specified defualt value.
 func Default() *Config {
 	return &Config{
-		Env:       &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host},
-		Discovery: &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
-		Comet:     &Comet{RoutineChan: 1024, RoutineSize: 32},
+		Env: &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host},
+		// Discovery: &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
+		Comet: &Comet{RoutineChan: 1024, RoutineSize: 32},
 		Room: &Room{
 			Batch:  20,
 			Signal: xtime.Duration(time.Second),
@@ -54,11 +53,11 @@ func Default() *Config {
 
 // Config is job config.
 type Config struct {
-	Env       *Env
-	Kafka     *Kafka
-	Discovery *naming.Config
-	Comet     *Comet
-	Room      *Room
+	Env   *Env
+	Kafka *Kafka
+	// Discovery *naming.Config
+	Comet *Comet
+	Room  *Room
 }
 
 // Room is room config.

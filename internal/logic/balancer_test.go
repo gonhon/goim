@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/bilibili/discovery/naming"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	"github.com/Terry-Mao/goim/internal/logic/model"
 )
 
@@ -31,8 +31,8 @@ func TestWeightedNode(t *testing.T) {
 }
 
 func TestLoadBalancer(t *testing.T) {
-	ss := []*naming.Instance{
-		&naming.Instance{
+	ss := []*etcdgrpc.Instance{
+		&etcdgrpc.Instance{
 			Region:   "bj",
 			Hostname: "01",
 			Metadata: map[string]string{
@@ -42,7 +42,7 @@ func TestLoadBalancer(t *testing.T) {
 				model.MetaAddrs:     "ip_bj",
 			},
 		},
-		&naming.Instance{
+		&etcdgrpc.Instance{
 			Region:   "sh",
 			Hostname: "02",
 			Metadata: map[string]string{
@@ -52,7 +52,7 @@ func TestLoadBalancer(t *testing.T) {
 				model.MetaAddrs:     "ip_sh",
 			},
 		},
-		&naming.Instance{
+		&etcdgrpc.Instance{
 			Region:   "gz",
 			Hostname: "03",
 			Metadata: map[string]string{

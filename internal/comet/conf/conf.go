@@ -9,7 +9,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	xtime "github.com/Terry-Mao/goim/pkg/time"
-	"github.com/bilibili/discovery/naming"
 )
 
 var (
@@ -60,9 +59,9 @@ func Init() (err error) {
 // Default new a config with specified defualt value.
 func Default() *Config {
 	return &Config{
-		Debug:         true,
-		Env:           &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight, Addrs: strings.Split(addrs, ","), Offline: offline},
-		Discovery:     &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
+		Debug: true,
+		Env:   &Env{Region: region, Zone: zone, DeployEnv: deployEnv, Host: host, Weight: weight, Addrs: strings.Split(addrs, ","), Offline: offline},
+		// Discovery:     &naming.Config{Region: region, Zone: zone, Env: deployEnv, Host: host},
 		DiscoveryEtcd: &DiscoveryEtcd{Host: hostEtcd, Port: portEtcd},
 		RPCClient: &RPCClient{
 			Dial:    xtime.Duration(time.Second),
@@ -112,9 +111,9 @@ func Default() *Config {
 
 // Config is comet config.
 type Config struct {
-	Debug         bool
-	Env           *Env
-	Discovery     *naming.Config
+	Debug bool
+	Env   *Env
+	// Discovery     *naming.Config
 	DiscoveryEtcd *DiscoveryEtcd
 	TCP           *TCP
 	Websocket     *Websocket

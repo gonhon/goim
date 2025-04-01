@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bilibili/discovery/naming"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	"github.com/Terry-Mao/goim/internal/logic/model"
 	log "github.com/golang/glog"
 )
@@ -130,7 +130,7 @@ func (lb *LoadBalancer) NodeAddrs(region, domain string, regionWeight float64) (
 }
 
 // Update update server nodes.
-func (lb *LoadBalancer) Update(ins []*naming.Instance) {
+func (lb *LoadBalancer) Update(ins []*etcdgrpc.Instance) {
 	var (
 		totalConns  int64
 		totalWeight int64

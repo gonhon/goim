@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -17,9 +18,9 @@ import (
 	"github.com/Terry-Mao/goim/internal/comet"
 	"github.com/Terry-Mao/goim/internal/comet/conf"
 	"github.com/Terry-Mao/goim/internal/comet/grpc"
+	"github.com/Terry-Mao/goim/internal/etcdgrpc"
 	md "github.com/Terry-Mao/goim/internal/logic/model"
 	"github.com/Terry-Mao/goim/pkg/ip"
-	"github.com/bilibili/discovery/naming"
 	log "github.com/golang/glog"
 )
 
@@ -60,6 +61,7 @@ func main() {
 	rpcSrv := grpc.New(conf.Conf.RPCServer, srv)
 	// cancel := register(dis, srv)
 	// todo 更新元数据
+	registerEtcd(srv)
 
 	// signal
 	c := make(chan os.Signal, 1)
@@ -84,11 +86,11 @@ func main() {
 	}
 }
 
-func register(dis *naming.Discovery, srv *comet.Server) context.CancelFunc {
+func registerEtcd(srv *comet.Server) context.CancelFunc {
 	env := conf.Conf.Env
 	addr := ip.InternalIP()
 	_, port, _ := net.SplitHostPort(conf.Conf.RPCServer.Addr)
-	ins := &naming.Instance{
+	ins := &etcdgrpc.Instance{
 		Region:   env.Region,
 		Zone:     env.Zone,
 		Env:      env.DeployEnv,
@@ -103,15 +105,10 @@ func register(dis *naming.Discovery, srv *comet.Server) context.CancelFunc {
 			md.MetaAddrs:   strings.Join(env.Addrs, ","),
 		},
 	}
-	cancel, err := dis.Register(ins)
-	if err != nil {
-		panic(err)
-	}
 	// renew discovery metadata
 	go func() {
 		for {
 			var (
-				err   error
 				conns int
 				ips   = make(map[string]struct{})
 			)
@@ -123,13 +120,16 @@ func register(dis *naming.Discovery, srv *comet.Server) context.CancelFunc {
 			}
 			ins.Metadata[md.MetaConnCount] = fmt.Sprint(conns)
 			ins.Metadata[md.MetaIPCount] = fmt.Sprint(len(ips))
-			if err = dis.Set(ins); err != nil {
-				log.Errorf("dis.Set(%+v) error(%v)", ins, err)
-				time.Sleep(time.Second)
-				continue
-			}
+
+			cli := srv.NamingService.Client
+			insData, _ := json.Marshal(ins)
+
+			key := fmt.Sprintf("%s/%s/%s/%s", etcdgrpc.NameServicePrefix, etcdgrpc.LocalDataName, etcdgrpc.CometServerName, env.Host)
+			log.Infof("update data key:%s", key)
+			cli.Put(context.Background(), key, string(insData))
 			time.Sleep(time.Second * 10)
 		}
 	}()
-	return cancel
+	return nil
+
 }
